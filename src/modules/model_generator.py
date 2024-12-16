@@ -89,7 +89,7 @@ class ModelGenerator:
         # Dispatch to appropriate model generator
         if model_info['db_type'] == 'mongodb':
             return self._generate_mongoose_model(model_info)
-        elif model_info['db_type'] == 'postgres':
+        elif model_info['db_type'] == 'postgresql':
             return self._generate_postgres_model(model_info)
         else:
             raise ValueError(f"Unsupported database type: {model_info['db_type']}")
@@ -141,45 +141,64 @@ module.exports = mongoose.model('{model_name}', {model_name}Schema);
         return model_filename
 
     def _generate_postgres_model(self, model_info: Dict[str, Any]) -> str:
-        """Generate SQLAlchemy PostgreSQL model"""
+        """Generate Sequelize PostgreSQL model in JavaScript"""
         model_name = model_info['name']
         model_var = model_name.lower()
-        
-        # Construct SQLAlchemy model
-        model_content = f"""from sqlalchemy import Column, {', '.join(attr['type'] for attr in model_info['attributes'])}, Integer, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import func
 
-Base = declarative_base()
+        # Construct Sequelize model
+        model_content = f"""const {{ DataTypes, Model }} = require('sequelize');
+    const sequelize = require('../config/database'); // Adjust the path to your Sequelize config file
 
-class {model_name}(Base):
-    __tablename__ = '{model_var}s'
+    class {model_name} extends Model {{}}
 
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
-"""
-        
+    {model_name}.init({{
+    """
         # Add model attributes
         for attr in model_info['attributes']:
-            column_args = []
+            # Begin attribute definition
+            attr_def = f"  {attr['name']}: {{\n"
+            
+            # Map type to Sequelize DataTypes
+            type_mapping = {
+                'VARCHAR': 'DataTypes.STRING',
+                'INTEGER': 'DataTypes.INTEGER',
+                'BOOLEAN': 'DataTypes.BOOLEAN',
+                'TIMESTAMP': 'DataTypes.DATE',
+                'UUID': 'DataTypes.UUID',
+                'TEXT': 'DataTypes.TEXT'
+            }
+            attr_type = type_mapping.get(attr['type'], 'DataTypes.STRING')
+            attr_def += f"    type: {attr_type},\n"
+
+            # Add constraints
             if attr['required']:
-                column_args.append('nullable=False')
+                attr_def += "    allowNull: false,\n"
+
             if attr['unique']:
-                column_args.append('unique=True')
-            
-            # Add default value if specified
+                attr_def += "    unique: true,\n"
+
             if attr['default'] is not None:
-                column_args.append(f"default='{attr['default']}'" if attr['type'] == 'String' else f"default={attr['default']}")
-            
-            # Construct column definition
-            column_def = f"    {attr['name']} = Column({attr['type']}, {', '.join(column_args)})" if column_args else f"    {attr['name']} = Column({attr['type']})"
-            model_content += column_def + '\n'
-        
+                default_value = f"'{attr['default']}'" if attr['type'] == 'VARCHAR' or attr['type'] == 'TEXT' else attr['default']
+                attr_def += f"    defaultValue: {default_value},\n"
+
+            attr_def += "  },\n"
+            model_content += attr_def
+
+        # Closing the model definition
+        model_content += f"""}}, {{
+    sequelize,
+    modelName: '{model_var}',
+    tableName: '{model_var}s',
+    timestamps: true, // Add createdAt and updatedAt
+    }});
+
+    module.exports = {model_name};
+    """
+
         # Write model file
-        model_filename = f"models/{model_var}_model.py"
+        model_filename = f"models/{model_var}.model.js"
         with open(model_filename, 'w') as f:
             f.write(model_content)
-        
+
         print(f"✅ PostgreSQL Model {model_name} created successfully")
         return model_filename

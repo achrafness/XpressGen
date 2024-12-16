@@ -143,10 +143,10 @@ class ProjectInitializer:
             model_info = self.model_generator.create_schema(db_type=self.db_type)
             if not model_info:
                 break
-        print("Model info",model_info)
-        #     # Generate model, controller, and routes
-        #     model_file = self.model_generator.generate_model(model_info)
-        #     controller_file = self.controller_generator.generate_controller(model_info)
+            print(model_info)
+            # Generate model, controller, and routes
+            model_file = self.model_generator.generate_model(model_info)
+            controller_file = self.controller_generator.generate_controller(model_info)
         #     route_file = self.route_generator.generate_routes(model_info)
 
         #     # Update index.js with new routes

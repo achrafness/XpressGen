@@ -15,7 +15,7 @@ def generate_index_js(
         db_import = 'const connectDB = require("./db/connect");'
         if db_type.lower() == "mongodb":
             db_connection = "await connectDB(process.env.MONGO_URL);"
-        elif db_type.lower() == "postgres":
+        elif db_type.lower() == "postgresql":
             db_connection = "await connectDB(process.env.POSTGRES_URL);"
         else:
             raise ValueError("Invalid db_type. Choose 'mongodb' or 'postgres'.")

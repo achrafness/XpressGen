@@ -141,10 +141,8 @@ class ProjectInitializer:
             return
         while True:
             model_info = self.model_generator.create_schema(db_type=self.db_type)
-            print(model_info)
             if not model_info:
                 break
-            print("done")
         #     # Generate model, controller, and routes
         #     model_file = self.model_generator.generate_model(model_info)
         #     controller_file = self.controller_generator.generate_controller(model_info)

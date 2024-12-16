@@ -136,12 +136,15 @@ class ProjectInitializer:
 
     def interactive_model_generation(self):
         """Interactive model, route, and controller generation"""
+        if not self.use_db:
+            self.logger.info("Skipping model, route, and controller generation")
+            return
         while True:
             model_info = self.model_generator.create_schema()
             print(model_info)
             if not model_info:
                 break
-        
+            print("done")
         #     # Generate model, controller, and routes
         #     model_file = self.model_generator.generate_model(model_info)
         #     controller_file = self.controller_generator.generate_controller(model_info)

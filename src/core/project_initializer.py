@@ -140,7 +140,7 @@ class ProjectInitializer:
             self.logger.info("Skipping model, route, and controller generation")
             return
         while True:
-            model_info = self.model_generator.create_schema()
+            model_info = self.model_generator.create_schema(db_type=self.db_type)
             print(model_info)
             if not model_info:
                 break

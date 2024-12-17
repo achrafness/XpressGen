@@ -24,6 +24,7 @@ def generate_index_js(
     return f"""require('dotenv').config();
 require("express-async-errors");
 
+// middleware 
 {chr(10).join(middleware_imports)}
 
 const express = require("express");
@@ -31,11 +32,18 @@ const app = express();
 
 {db_import}
 
+// start route import
+
+
 
 // Middleware uses
 {chr(10).join(middleware_uses)}
 
 app.use(express.json());
+
+// routes 
+
+
 
 // Basic route
 app.use("/", (req, res) => {{
@@ -44,6 +52,8 @@ app.use("/", (req, res) => {{
     "timestamp": new Date().toISOString()
   }});
 }});
+
+
 
 // Not Found Middleware
 const notFound = require("./middleware/not-found");

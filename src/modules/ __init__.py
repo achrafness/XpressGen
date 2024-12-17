@@ -4,4 +4,5 @@ from .controller_generator import ControllerGenerator
 from .route_generator import RouteGenerator
 from .middleware_selector import MiddlewareSelector
 from create_middleware_files import MiddlewareGenerator
-__all__ = ["DatabaseSelector", "ModelGenerator", "ControllerGenerator", "RouteGenerator", "MiddlewareSelector","MiddlewareGenerator"]
+from modules.create_errors_files import ErrorClassesGenerator
+__all__ = ["DatabaseSelector", "ModelGenerator", "ControllerGenerator", "RouteGenerator", "MiddlewareSelector","MiddlewareGenerator","ErrorClassesGenerator"]

@@ -9,6 +9,7 @@ from modules.model_generator import ModelGenerator
 from modules.route_generator import RouteGenerator
 from modules.controller_generator import ControllerGenerator
 from modules.create_middleware_files import MiddlewareGenerator
+from modules.create_errors_files import ErrorClassesGenerator
 from templates.index_js import generate_index_js
 from templates.env_template import generate_env_template
 from templates.readme_template import generate_readme_template
@@ -22,7 +23,7 @@ class ProjectInitializer:
         self.model_generator = ModelGenerator()
         self.route_generator = RouteGenerator()
         self.controller_generator = ControllerGenerator()
-
+        self.create_error_file = ErrorClassesGenerator()
         self.CORE_DEPENDENCIES = [
             'express', 
             'dotenv', 
@@ -34,34 +35,38 @@ class ProjectInitializer:
         """Main project setup method"""
         try:
             # Project initialization
-            # self.initialize_project()
-            # self.create_project_structure()
+            self.initialize_project()
+            self.create_project_structure()
             
-
-
-            # Database setup can reterun none or mongodb or postgress 
+            # # Database setup can reterun none or mongodb or postgress 
             database_config = self.database_selector.select_and_setup_database()
             self.use_db = database_config is not None
             self.db_type = database_config.lower() if self.use_db else None   
+            self.logger.info(f"Database setup: {self.db_type}")
             
-            # Middleware setup
-            # middleware_imports, middleware_uses = self.middleware_selector.select_middleware()
-            
-            # Create dotenv files
-            # self.create_env_file()
-            
-            # Create middleware files
-            # self.create_middleware_files()
+            # # Middleware setup
+            self.middleware_imports, self.middleware_uses , self.middleware_packeges = self.middleware_selector.full_middleware_setup()
             
             # Create index.js file
-            # self.create_index_file()
+            self.create_index_file()
             
-
-            # Model, route, and controller generation
+            # # Model, route, and controller generation
             self.interactive_model_generation()
+            
+            
+            # # Create dotenv files
+            self.create_env_file()
 
-            # Git initialization
-            # self.create_readme()  wait after db question
+
+            # # Create middleware files
+            self.create_middleware_files()
+            
+            # Create a error file 
+            self.create_error_file.generate_error_classes()
+            
+            
+            # # Git initialization
+            self.create_readme() 
             self.initialize_git()
 
             self.logger.info("🎉 Express.js project setup completed successfully!")
@@ -120,7 +125,7 @@ class ProjectInitializer:
 
     def create_index_file(self):
         """Create index.js with dynamic configuration"""
-        index_content = generate_index_js(use_db=self.use_db , db_type=self.db_type)
+        index_content = generate_index_js(middleware_imports=self.middleware_imports ,middleware_uses=self.middleware_uses ,use_db=self.use_db , db_type=self.db_type)
         try:
             with open('index.js', 'w') as file:
                 file.write(index_content)
@@ -147,13 +152,13 @@ class ProjectInitializer:
             # Generate model, controller, and routes
             model_file = self.model_generator.generate_model(model_info)
             controller_file = self.controller_generator.generate_controller(model_info)
-        #     route_file = self.route_generator.generate_routes(model_info)
+            route_file = self.route_generator.generate_routes(model_info)
 
-        #     # Update index.js with new routes
-        #     self.route_generator.update_index_routes(
-        #         model_info['name'], 
-        #         model_info['name'].lower()
-        #     )
+            # Update index.js with new routes
+            self.route_generator.update_index_routes(
+                model_info['name'], 
+                model_info['name'].lower()
+            )
 
     def create_readme(self):
         """Create a comprehensive README.md for the project"""

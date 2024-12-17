@@ -31,6 +31,8 @@ class DatabaseSelector:
         ).execute()
 
         # return the type and useage of database or not
+        if database_type in self.database_options:
+            self.database_options[database_type]()
         return database_type
 
     def _setup_mongodb(self):

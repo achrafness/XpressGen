@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 from typing import List, Tuple
 from dataclasses import dataclass
 
@@ -9,6 +12,7 @@ class MiddlewareOption:
     import_code: str
     use_code: str = None
     description: str = ""
+    dev_dependency: bool = False
 
 class MiddlewareSelector:
     def __init__(self):
@@ -69,15 +73,15 @@ class MiddlewareSelector:
                 description="Authentication middleware"
             ),
             MiddlewareOption(
-                package='validator',
-                import_code="const validator = require('express-validator');",
-                use_code="app.use(validator());",
+                package='express-validator',
+                import_code="const { body, validationResult } = require('express-validator');",
+                use_code="// Use validator in routes, e.g., [body('email').isEmail()]",
                 description="For data validation in middleware"
             ),
             MiddlewareOption(
                 package='multer',
                 import_code="const multer = require('multer');",
-                use_code="app.use(multer({ dest: 'uploads/' }).single('file'));",
+                use_code="const upload = multer({ dest: 'uploads/' });",
                 description="Middleware for handling `multipart/form-data`"
             ),
             MiddlewareOption(
@@ -88,7 +92,7 @@ class MiddlewareSelector:
             ),
         ]
 
-    def select_middleware(self) -> Tuple[List[str], List[str]]:
+    def select_middleware(self) -> Tuple[List[str], List[str], List[str]]:
         """Interactive middleware setup"""
         selected_middleware = []
         
@@ -102,7 +106,79 @@ class MiddlewareSelector:
             if include == 'Yes':
                 selected_middleware.append(middleware)
         
-        imports = [mw.import_code for mw in selected_middleware if mw.import_code]
-        uses = [mw.use_code for mw in selected_middleware if mw.use_code]
+        return (
+            [mw.import_code for mw in selected_middleware if mw.import_code],
+            [mw.use_code for mw in selected_middleware if mw.use_code],
+            [mw.package for mw in selected_middleware if mw.package]
+        )
+
+    def install_packages(self, packages: List[str], dev: bool = False):
+        """
+        Install selected packages using npm
         
-        return imports, uses
+        Args:
+            packages (List[str]): List of packages to install
+            dev (bool, optional): Install as dev dependencies. Defaults to False.
+        """
+        if not packages:
+            print("No packages selected for installation.")
+            return
+
+        # Ensure npm is installed
+        try:
+            subprocess.run(['npm', '--version'], capture_output=True, text=True, check=True)
+        except subprocess.CalledProcessError:
+            print("npm is not installed. Please install Node.js and npm.")
+            return
+
+        # Prepare installation command
+        install_cmd = ['npm', 'install']
+        if dev:
+            install_cmd.append('-D')
+        
+        # Add packages to the command
+        install_cmd.extend(packages)
+
+        # Confirm installation
+        confirm = inquirer.select(
+            message=f"Install {'dev ' if dev else ''}packages: {', '.join(packages)}?",
+            choices=['Yes', 'No'],
+            default='Yes'
+        ).execute()
+
+        if confirm == 'Yes':
+            try:
+                print(f"Installing {' '.join(packages)}...")
+                result = subprocess.run(install_cmd, capture_output=True, text=True, check=True)
+                print("✅ Packages installed successfully!")
+                print(result.stdout)
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Error installing packages: {e}")
+                print(e.stderr)
+
+    def full_middleware_setup(self):
+        """
+        Complete middleware setup process:
+        1. Select middleware
+        2. Install packages
+        3. Update index.js with imports and uses
+        """
+        # Select middleware
+        imports, uses, packages = self.select_middleware()
+
+        if packages:
+            # Option to install as dev or production dependency
+            dep_type = inquirer.select(
+                message="Install packages as development or production dependencies?",
+                choices=['Production', 'Development'],
+                default='Production'
+            ).execute()
+
+            # Install packages
+            self.install_packages(
+                packages, 
+                dev=(dep_type == 'Development')
+            )
+
+        return imports, uses, packages
+

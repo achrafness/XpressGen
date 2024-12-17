@@ -94,14 +94,13 @@ module.exports = {{
 }};
 """
         elif db_type == 'postgresql':
-            controller_content = f"""const db = require('../models');
+            controller_content = f"""const {model_name} = require('../models/{model_var}.model');
 const {{ StatusCodes }} = require('http-status-codes');
 const {{ 
     BadRequestError, 
     NotFoundError, 
     CustomAPIError 
 }} = require('../errors');
-const {{ {model_name} }} = db;
 
 // Create new {model_var}
 const create{model_name} = async (req, res) => {{

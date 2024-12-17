@@ -139,25 +139,20 @@ module.exports = mongoose.model('{model_name}', {model_name}Schema);
         
         print(f"✅ Mongoose Model {model_name} created successfully")
         return model_filename
-
-    def _generate_postgres_model(self, model_info: Dict[str, Any]) -> str:
-        """Generate Sequelize PostgreSQL model in JavaScript"""
+    def generate_postgres_model(self, model_info: Dict[str, Any]) -> str:
+        """Generate Sequelize PostgreSQL model in modern JavaScript format"""
         model_name = model_info['name']
         model_var = model_name.lower()
 
-        # Construct Sequelize model
-        model_content = f"""const {{ DataTypes, Model }} = require('sequelize');
-    const sequelize = require('../config/database'); // Adjust the path to your Sequelize config file
+        # Begin model content
+        model_content = f"""const {{ DataTypes }} = require('sequelize');
 
-    class {model_name} extends Model {{}}
-
-    {model_name}.init({{
+    const Model = (sequelize) => {{
+        return sequelize.define('{model_name}', {{
     """
+
         # Add model attributes
         for attr in model_info['attributes']:
-            # Begin attribute definition
-            attr_def = f"  {attr['name']}: {{\n"
-            
             # Map type to Sequelize DataTypes
             type_mapping = {
                 'VARCHAR': 'DataTypes.STRING',
@@ -168,37 +163,53 @@ module.exports = mongoose.model('{model_name}', {model_name}Schema);
                 'TEXT': 'DataTypes.TEXT'
             }
             attr_type = type_mapping.get(attr['type'], 'DataTypes.STRING')
-            attr_def += f"    type: {attr_type},\n"
 
-            # Add constraints
+            # Begin attribute definition
+            attr_def = f"    {attr['name']}: {{\n"
+            attr_def += f"        type: {attr_type},\n"
+
+            # Add constraints and validations
+            constraints = []
+            
+            # Required/Nullable
             if attr['required']:
-                attr_def += "    allowNull: false,\n"
-
+                constraints.append("allowNull: false")
+            
+            # Unique
             if attr['unique']:
-                attr_def += "    unique: true,\n"
-
+                constraints.append("unique: true")
+            
+            # Default value
             if attr['default'] is not None:
-                default_value = f"'{attr['default']}'" if attr['type'] == 'VARCHAR' or attr['type'] == 'TEXT' else attr['default']
-                attr_def += f"    defaultValue: {default_value},\n"
+                default_value = f"'{attr['default']}'" if attr['type'] in ['VARCHAR', 'TEXT'] else attr['default']
+                constraints.append(f"defaultValue: {default_value}")
+            
+            # Length validation for string types
+            if attr['type'] in ['VARCHAR', 'TEXT']:
+                constraints.append("validate: {\n            len: [3, 255]\n        }")
 
-            attr_def += "  },\n"
+            # Add constraints to attribute definition
+            if constraints:
+                attr_def += "        " + ",\n        ".join(constraints) + "\n"
+            
+            attr_def += "    },\n"
             model_content += attr_def
 
-        # Closing the model definition
-        model_content += f"""}}, {{
-    sequelize,
-    modelName: '{model_var}',
-    tableName: '{model_var}s',
-    timestamps: true, // Add createdAt and updatedAt
-    }});
+        # Close model definition with additional options
+        model_content += f"""    }}, {{
+            timestamps: true,
+            paranoid: true, // Soft delete
+            tableName: '{model_var}s'
+        }});
+    }};
 
-    module.exports = {model_name};
+    module.exports = Model;
     """
 
         # Write model file
         model_filename = f"models/{model_var}.model.js"
         with open(model_filename, 'w') as f:
             f.write(model_content)
-
+        
         print(f"✅ PostgreSQL Model {model_name} created successfully")
         return model_filename

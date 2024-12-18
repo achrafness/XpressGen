@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 from core.project_initializer import ProjectInitializer
 

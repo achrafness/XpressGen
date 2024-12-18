@@ -3,13 +3,13 @@ import sys
 
 from utils.command_runner import CommandRunner
 from utils.logger import setup_logger
-from modules.middleware_selector import MiddlewareSelector
-from modules.database_selector import DatabaseSelector
-from modules.model_generator import ModelGenerator
-from modules.route_generator import RouteGenerator
-from modules.controller_generator import ControllerGenerator
-from modules.create_middleware_files import MiddlewareGenerator
-from modules.create_errors_files import ErrorClassesGenerator
+from modules.selectors.middleware_selector import MiddlewareSelector
+from modules.selectors.database_selector import DatabaseSelector
+from modules.generators.model_generator import ModelGenerator
+from modules.generators.route_generator import RouteGenerator
+from modules.generators.controller_generator import ControllerGenerator
+from modules.middleware.create_middleware_files import MiddlewareGenerator
+from modules.middleware.create_errors_files import ErrorClassesGenerator
 from templates.index_js import generate_index_js
 from templates.env_template import generate_env_template
 from templates.readme_template import generate_readme_template
@@ -49,8 +49,9 @@ class ProjectInitializer:
             # Create index.js file
             self.create_index_file()
             
-            # # Model, route, and controller generation
-            self.interactive_model_generation()
+            #  Model, route, and controller generation
+            if self.use_db:
+                self.interactive_model_generation()
             
             
             # # Create dotenv files

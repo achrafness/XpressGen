@@ -10,17 +10,17 @@ def generate_index_js(
     db_import = ""
     db_connection = ""
 
+    # Add database connection logic
     if use_db:
-        # Import and connection logic based on database type
-        db_import = 'const connectDB = require("./db/connect");'
         if db_type.lower() == "mongodb":
+            db_import = 'const connectDB = require("./db/connect");'
             db_connection = "await connectDB(process.env.MONGO_URL);"
         elif db_type.lower() == "postgresql":
             db_import = 'const sequelize = require("./db/connect");'
             db_connection = """\
-            await sequelize.authenticate();
-            await sequelize.sync();
-            """
+await sequelize.authenticate();
+await sequelize.sync();
+"""
         else:
             raise ValueError("Invalid db_type. Choose 'mongodb' or 'postgres'.")
 
@@ -50,7 +50,7 @@ app.use(express.json());
 
 
 // Basic route
-app.use("/", (req, res) => {{
+app.get("/", (req, res) => {{
   res.json({{
     "message": "Welcome to the Express API",
     "timestamp": new Date().toISOString()
@@ -71,7 +71,9 @@ const port = process.env.PORT || 5000;
 
 const start = async () => {{
   try {{
+    console.log("Connecting to the database...")
     {db_connection}
+    console.log("{db_type.capitalize()} connection established.");
     app.listen(port, () => {{
       console.log(`Server is listening on port ${{port}}...`);
       console.log(`Environment: ${{process.env.NODE_ENV || 'development'}}`);

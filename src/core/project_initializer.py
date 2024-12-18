@@ -38,13 +38,12 @@ class ProjectInitializer:
             self.initialize_project()
             self.create_project_structure()
             
-            # # Database setup can reterun none or mongodb or postgress 
+            # Database setup can reterun none or mongodb or postgress 
             database_config = self.database_selector.select_and_setup_database()
             self.use_db = database_config is not None
             self.db_type = database_config.lower() if self.use_db else None   
-            self.logger.info(f"Database setup: {self.db_type}")
             
-            # # Middleware setup
+            # Middleware setup
             self.middleware_imports, self.middleware_uses , self.middleware_packeges = self.middleware_selector.full_middleware_setup()
             
             # Create index.js file

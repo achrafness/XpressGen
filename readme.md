@@ -26,8 +26,9 @@ XpressGen is a powerful tool for generating customizable templates and streamlin
 
 - in Linux , macOs
    ```bash
-   ln -s $(pwd)/src/main.py /usr/local/bin/xpressgen
-   chmod +x /usr/local/bin/xpressgen
+      sudo rm /usr/local/bin/xpressgen
+      sudo ln -s $(pwd)/src/main.py /usr/local/bin/xpressgen
+      sudo chmod +x /usr/local/bin/xpressgen
    ```
 -  in windaws
    ```bash 

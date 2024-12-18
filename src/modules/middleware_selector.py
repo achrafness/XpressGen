@@ -133,20 +133,17 @@ class MiddlewareSelector:
         
         # Add packages to the command
         install_cmd.extend(packages)
-        print("this step 02")
         # Confirm installation
         confirm = inquirer.select(
             message=f"Install {'dev ' if dev else ''}packages: {', '.join(packages)}?",
             choices=['Yes', 'No'],
             default='Yes'
         ).execute()
-        print("this step 03")
 
         if confirm == 'Yes':
             print(f"Installing {' '.join(packages)}...")
             result = self.command_runner.run_command(install_cmd)
             print("✅ Packages installed successfully!")
-
 
     def full_middleware_setup(self):
         """

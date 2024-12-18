@@ -26,6 +26,9 @@ class ModelGenerator:
         if not model_name.strip():
             print("Finish model creation.")
             return None
+        # Ensure the first letter of model name is uppercase
+        model_name = model_name.capitalize()
+        
         # Select appropriate types based on database
         type_choices = self.MONGOOSE_TYPES if db_type == 'mongodb' else self.POSTGRES_TYPES
         

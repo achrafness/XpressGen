@@ -77,20 +77,12 @@ xpressgen
    ```
 5. **Open a Pull Request**.
 
-## License
-
-
+<!-- ## License -->
 
 ## Contact
 
 Achraf Abdelouadoud - achraf.nessighaoui13@gmail.com     
 Project Link: [Link](https://github.com/achrafness/XpressGen.git)
 
----
 
-## Additional Recommendations
 
-1. **Customize the README** to match your specific project details.
-2. **Update the `requirements.txt`** as you add more dependencies.
-3. **Use `pip freeze > requirements.txt`** to capture exact dependency versions.
-4. **Add detailed documentation** for each module to improve maintainability and onboarding.

@@ -16,7 +16,11 @@ def generate_index_js(
         if db_type.lower() == "mongodb":
             db_connection = "await connectDB(process.env.MONGO_URL);"
         elif db_type.lower() == "postgresql":
-            db_connection = "await connectDB(process.env.POSTGRES_URL);"
+            db_import = 'const sequelize = require("./db/connect");'
+            db_connection = """\
+            await sequelize.authenticate();
+            await sequelize.sync();
+            """
         else:
             raise ValueError("Invalid db_type. Choose 'mongodb' or 'postgres'.")
 

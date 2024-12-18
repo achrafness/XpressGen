@@ -1,6 +1,8 @@
 import os
 from typing import Dict, Any, List
 from InquirerPy import inquirer
+import re
+
 
 class ModelGenerator:
     def __init__(self):
@@ -139,16 +141,15 @@ module.exports = mongoose.model('{model_name}', {model_name}Schema);
         
         print(f"✅ Mongoose Model {model_name} created successfully")
         return model_filename
-    def generate_postgres_model(self, model_info: Dict[str, Any]) -> str:
+    def _generate_postgres_model(self, model_info: Dict[str, Any]) -> str:
         """Generate Sequelize PostgreSQL model in modern JavaScript format"""
         model_name = model_info['name']
         model_var = model_name.lower()
 
         # Begin model content
         model_content = f"""const {{ DataTypes }} = require('sequelize');
-
-    const Model = (sequelize) => {{
-        return sequelize.define('{model_name}', {{
+    const sequelize = require("../db/connect");
+    const {model_name} = sequelize.define('{model_name}', {{
     """
 
         # Add model attributes
@@ -174,13 +175,15 @@ module.exports = mongoose.model('{model_name}', {model_name}Schema);
             # Required/Nullable
             if attr['required']:
                 constraints.append("allowNull: false")
+            else:
+                constraints.append("allowNull: true")
             
             # Unique
             if attr['unique']:
                 constraints.append("unique: true")
             
             # Default value
-            if attr['default'] is not None:
+            if attr.get('default') is not None:
                 default_value = f"'{attr['default']}'" if attr['type'] in ['VARCHAR', 'TEXT'] else attr['default']
                 constraints.append(f"defaultValue: {default_value}")
             
@@ -196,14 +199,13 @@ module.exports = mongoose.model('{model_name}', {model_name}Schema);
             model_content += attr_def
 
         # Close model definition with additional options
-        model_content += f"""    }}, {{
-            timestamps: true,
-            paranoid: true, // Soft delete
-            tableName: '{model_var}s'
-        }});
-    }};
+        model_content += f"""}}, {{
+        timestamps: true,
+        paranoid: true, // Soft delete
+        tableName: '{model_var}s'
+    }});
 
-    module.exports = Model;
+    module.exports = {model_name};
     """
 
         # Write model file
@@ -213,3 +215,4 @@ module.exports = mongoose.model('{model_name}', {model_name}Schema);
         
         print(f"✅ PostgreSQL Model {model_name} created successfully")
         return model_filename
+    

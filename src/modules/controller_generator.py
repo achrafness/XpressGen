@@ -105,6 +105,8 @@ const {{
 // Create new {model_var}
 const create{model_name} = async (req, res) => {{
     const {{ {attributes_destructure} }} = req.body;
+    // Validate required attributes
+    {required_validation}
     const {model_var} = await {model_name}.create({{ {attributes_destructure} }});
     res.status(StatusCodes.CREATED).json({{{model_var}}});
 }};

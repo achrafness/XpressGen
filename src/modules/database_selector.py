@@ -83,30 +83,23 @@ module.exports = connectDB;
         
         # Create connection file
         postgresql_connection_content = """const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-const connectDB = async (dbUrl) => {
-  try {
-    const sequelize = new Sequelize(dbUrl, {
-      dialect: 'postgres',
-      logging: false,
-      dialectOptions: {
-        ssl: process.env.NODE_ENV === 'production' ? {
-          require: true,
-          rejectUnauthorized: false
-        } : false
-      }
-    });
-
-    await sequelize.authenticate();
-    console.log('PostgreSQL connection successful');
-    return sequelize;
-  } catch (error) {
-    console.error('PostgreSQL connection failed:', error);
-    process.exit(1);
+const sequelize = new Sequelize(
+  process.env.POSTGRES_URL, 
+{
+  dialect: 'postgres',
+  logging: false,
+  pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
   }
-};
+}
+);
 
-module.exports = connectDB;
+module.exports = sequelize
 """
         with open('db/connect.js', 'w') as file:
             file.write(postgresql_connection_content)

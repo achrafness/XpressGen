@@ -18,7 +18,7 @@ class ProjectInitializer:
     def __init__(self):
         self.logger = setup_logger()
         self.command_runner = CommandRunner(self.logger)
-        self.middleware_selector = MiddlewareSelector()
+        self.middleware_selector = MiddlewareSelector(self.logger)
         self.database_selector = DatabaseSelector(self.command_runner)
         self.model_generator = ModelGenerator()
         self.route_generator = RouteGenerator()

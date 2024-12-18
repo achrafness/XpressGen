@@ -1,5 +1,5 @@
 import os
-import subprocess
+from utils.command_runner import CommandRunner
 import sys
 from typing import List, Tuple
 from dataclasses import dataclass
@@ -15,8 +15,9 @@ class MiddlewareOption:
     dev_dependency: bool = False
 
 class MiddlewareSelector:
-    def __init__(self):
+    def __init__(self,logger):
         # Initialize the optional middleware with detailed information
+        self.command_runner = CommandRunner(logger)
         self.OPTIONAL_MIDDLEWARE = [
             MiddlewareOption(
                 package='cors',
@@ -124,12 +125,6 @@ class MiddlewareSelector:
             print("No packages selected for installation.")
             return
 
-        # Ensure npm is installed
-        try:
-            subprocess.run(['npm', '--version'], capture_output=True, text=True, check=True)
-        except subprocess.CalledProcessError:
-            print("npm is not installed. Please install Node.js and npm.")
-            return
 
         # Prepare installation command
         install_cmd = ['npm', 'install']
@@ -138,23 +133,20 @@ class MiddlewareSelector:
         
         # Add packages to the command
         install_cmd.extend(packages)
-
+        print("this step 02")
         # Confirm installation
         confirm = inquirer.select(
             message=f"Install {'dev ' if dev else ''}packages: {', '.join(packages)}?",
             choices=['Yes', 'No'],
             default='Yes'
         ).execute()
+        print("this step 03")
 
         if confirm == 'Yes':
-            try:
-                print(f"Installing {' '.join(packages)}...")
-                result = subprocess.run(install_cmd, capture_output=True, text=True, check=True)
-                print("✅ Packages installed successfully!")
-                print(result.stdout)
-            except subprocess.CalledProcessError as e:
-                print(f"❌ Error installing packages: {e}")
-                print(e.stderr)
+            print(f"Installing {' '.join(packages)}...")
+            result = self.command_runner.run_command(install_cmd)
+            print("✅ Packages installed successfully!")
+
 
     def full_middleware_setup(self):
         """

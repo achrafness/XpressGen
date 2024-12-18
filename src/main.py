@@ -8,10 +8,7 @@ def main():
     Initializes the project setup process.
     """
     try:
-        # Create an instance of ProjectInitializer
         project_setup = ProjectInitializer()
-        
-        # Run the full project setup process
         project_setup.setup_project()
     
     except Exception as e:

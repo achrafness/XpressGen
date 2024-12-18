@@ -24,11 +24,15 @@ XpressGen is a powerful tool for generating customizable templates and streamlin
 
    If you want to create a symbolic link to easily run `XpressGen` from anywhere, use the following command:
 
+- in Linux , macOs
    ```bash
    ln -s $(pwd)/src/main.py /usr/local/bin/xpressgen
    chmod +x /usr/local/bin/xpressgen
    ```
-
+-  in windaws
+   ```bash 
+   New-Item -ItemType SymbolicLink -Path "C:\usr\local\bin\xpressgen" -Target "$(Get-Location)\src\main.py"
+   ```
    After this, you can run the application using:
    ```bash
    xpressgen

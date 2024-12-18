@@ -34,9 +34,10 @@ XpressGen is a powerful tool for generating customizable templates and streamlin
    ```bash 
    soon
    ```
-   After this, you can run the application using:
+   After this, you can run the application using (go to your folder of porject) :
    ```bash
-   xpressgen
+   xpressgen         # If using a symbolic link
+   python src/main.py  # If not using a symbolic link
    ```
 
 ## Project Structure

@@ -31,7 +31,7 @@ XpressGen is a powerful tool for generating customizable templates and streamlin
    ```
 -  in windaws
    ```bash 
-   New-Item -ItemType SymbolicLink -Path "C:\usr\local\bin\xpressgen" -Target "$(Get-Location)\src\main.py"
+   soon
    ```
    After this, you can run the application using:
    ```bash
